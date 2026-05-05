@@ -342,6 +342,39 @@
             margin-top: 1rem;
             box-shadow: var(--shadow);
         }
+        .photo-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+            gap: .5rem;
+            margin-top: 1rem;
+        }
+        .photo-thumb {
+            position: relative;
+            border-radius: 8px;
+            overflow: hidden;
+            aspect-ratio: 1;
+            box-shadow: var(--shadow);
+        }
+        .photo-thumb img {
+            width: 100%; height: 100%;
+            object-fit: cover;
+        }
+        .photo-thumb .remove-btn {
+            position: absolute; top: 2px; right: 2px;
+            background: rgba(0,0,0,.6); color: #fff;
+            border: none; border-radius: 50%;
+            width: 22px; height: 22px; font-size: .7rem;
+            cursor: pointer; display: flex; align-items: center; justify-content: center;
+        }
+        .photo-thumb .remove-btn:hover { background: var(--pg-red); }
+        .photo-thumb .status-dot {
+            position: absolute; bottom: 4px; right: 4px;
+            width: 10px; height: 10px; border-radius: 50%;
+            border: 1.5px solid #fff;
+        }
+        .photo-thumb .status-dot.pending { background: var(--pg-orange); }
+        .photo-thumb .status-dot.done { background: var(--pg-green); }
+        .photo-count { font-size: .78rem; color: var(--pg-gray-600); margin-top: .35rem; }
 
         /* ── Inference log table ──────────────────────────── */
         .log-table {
@@ -504,22 +537,25 @@
         <div class="header-divider"></div>
         <div>
             <div class="header-title">On-Device AI Demo</div>
-            <div class="header-subtitle">Powered by NPU · Copilot+ PC</div>
+            <div class="header-subtitle">Processed locally on NPU · Connected securely via WorkIQ</div>
         </div>
     </div>
     <div class="header-right">
         <div class="surface-badge">
-            <!-- Surface Logo (SVG inline) -->
-            <svg class="surface-logo" viewBox="0 0 120 20" xmlns="http://www.w3.org/2000/svg">
-                <rect x="0" y="0" width="18" height="18" rx="2" fill="#FFFFFF"/>
-                <line x1="9" y1="0" x2="9" y2="18" stroke="rgba(0,51,160,.3)" stroke-width=".8"/>
-                <line x1="0" y1="9" x2="18" y2="9" stroke="rgba(0,51,160,.3)" stroke-width=".8"/>
-                <text x="23" y="14.5" font-family="Inter, Segoe UI, sans-serif" font-size="13" font-weight="600" fill="#FFFFFF">Surface</text>
+            <!-- Windows 11 Logo (SVG inline) -->
+            <svg class="surface-logo" viewBox="0 0 140 20" xmlns="http://www.w3.org/2000/svg">
+                <rect x="0" y="1" width="8" height="8" fill="#FFFFFF"/>
+                <rect x="9.5" y="1" width="8" height="8" fill="#FFFFFF"/>
+                <rect x="0" y="10.5" width="8" height="8" fill="#FFFFFF"/>
+                <rect x="9.5" y="10.5" width="8" height="8" fill="#FFFFFF"/>
+                <text x="23" y="14.5" font-family="Inter, Segoe UI, sans-serif" font-size="13" font-weight="600" fill="#FFFFFF">Windows 11</text>
             </svg>
         </div>
         <span class="prototype-badge">PROTOTYPE</span>
         <div class="status-dot" id="statusDot" title="Checking..."></div>
         <span class="status-label" id="statusLabel">Connecting…</span>
+        <div class="status-dot" id="workiqDot" style="background:#888;" title="WorkIQ Disconnected"></div>
+        <span class="status-label" id="workiqLabel">WorkIQ Off</span>
     </div>
 </header>
 
@@ -538,59 +574,59 @@
     <!-- ──── HOME TAB ──── -->
     <section class="tab-panel active" id="panel-home">
         <div class="welcome-hero">
-            <h1>🛡️ On-Device AI for Zava Insurance</h1>
-            <p>Experience the power of the NPU running AI inference directly on this Surface device. No cloud. No API costs. No connectivity required. Full data sovereignty.</p>
+            <h1>🛡️ Hybrid AI for Zava Insurance</h1>
+            <p>AI inference runs locally on the NPU — fast, private, and secure. Connect to Microsoft WorkIQ to enrich insights with organizational data while keeping sensitive processing on-device.</p>
         </div>
 
         <div class="feature-cards">
             <div class="feature-card" onclick="switchTab('claims')">
                 <div class="icon">📋</div>
                 <h3>Claims AI Assessment</h3>
-                <p>Upload field photos and get instant AI-powered damage assessments — severity, repair estimates, and next steps — all processed on-device.</p>
+                <p>Upload field photos for instant damage assessments — severity, repair estimates, and next steps — processed locally on the NPU, submitted securely via WorkIQ.</p>
             </div>
             <div class="feature-card" onclick="switchTab('chat')">
                 <div class="icon">💬</div>
                 <h3>Policy Assistant</h3>
-                <p>Chat with an AI insurance expert about policy questions, coverage details, and claims guidance. Runs entirely on the NPU.</p>
+                <p>Chat with an AI insurance expert. Connect to WorkIQ for customer history and CRM data — AI reasoning stays on-device, organizational knowledge flows in securely.</p>
             </div>
             <div class="feature-card" onclick="switchTab('docs')">
                 <div class="icon">📄</div>
                 <h3>Document Analyzer</h3>
-                <p>Paste insurance documents for AI-powered summarization, data extraction, or compliance review — no data leaves the device.</p>
+                <p>AI-powered summarization, data extraction, and compliance review — processed locally. Connect to WorkIQ to cross-reference M365 context securely.</p>
             </div>
             <div class="feature-card" onclick="switchTab('dashboard')">
                 <div class="icon">📊</div>
                 <h3>NPU Dashboard</h3>
-                <p>Monitor real-time NPU inference metrics, track cloud cost savings, and see the business case for on-device AI at scale.</p>
+                <p>Monitor real-time NPU inference metrics, track cloud cost savings, and see the business case for hybrid AI at scale.</p>
             </div>
         </div>
 
         <div class="value-banner" style="margin-top: 1.5rem;">
-            <div class="icon">✈️</div>
+            <div class="icon">🔒</div>
             <div>
-                <h2>Works in Airplane Mode</h2>
-                <p>Every feature in this demo runs entirely on-device using the NPU. Disconnect Wi-Fi, turn on airplane mode — the AI keeps working. Perfect for field adjusters in dead zones, secure facilities, or customer homes with no connectivity.</p>
+                <h2>Processed Locally. Connected Securely.</h2>
+                <p>All AI inference runs on-device via the NPU — no sensitive data leaves the hardware. When connected, Microsoft WorkIQ securely enriches responses with organizational context from M365 (emails, documents, Teams). Works offline too — disconnect Wi-Fi and the AI keeps running.</p>
             </div>
         </div>
 
         <div class="card">
-            <div class="card-header"><span class="icon">💡</span> Why On-Device AI for Zava?</div>
+            <div class="card-header"><span class="icon">💡</span> Why Hybrid AI for Zava?</div>
             <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem;">
                 <div>
                     <strong>$0.00 per inference</strong>
-                    <p style="font-size:.82rem; color:var(--pg-gray-600); margin-top:.25rem;">No per-token API fees after hardware purchase. Routine AI tasks at zero incremental cost across your fleet.</p>
+                    <p style="font-size:.82rem; color:var(--pg-gray-600); margin-top:.25rem;">AI runs on the NPU — no per-token API fees. Routine tasks at zero incremental cost across your fleet.</p>
                 </div>
                 <div>
                     <strong>Data Sovereignty</strong>
-                    <p style="font-size:.82rem; color:var(--pg-gray-600); margin-top:.25rem;">PII, claim photos, and policy data never leave the device. Reduce cross-border data transfer compliance risks.</p>
+                    <p style="font-size:.82rem; color:var(--pg-gray-600); margin-top:.25rem;">PII, claim photos, and policy data stay on-device. WorkIQ connects securely — only context flows in, never raw data out.</p>
                 </div>
                 <div>
-                    <strong>Sub-Second Latency</strong>
-                    <p style="font-size:.82rem; color:var(--pg-gray-600); margin-top:.25rem;">NPU inference is fast — no network round-trip. Field adjusters get instant AI assessments on-site.</p>
+                    <strong>Best of Both Worlds</strong>
+                    <p style="font-size:.82rem; color:var(--pg-gray-600); margin-top:.25rem;">Local NPU for fast private inference + Microsoft WorkIQ for organizational intelligence. Hybrid AI without compromise.</p>
                 </div>
                 <div>
                     <strong>Fleet-Scale Savings</strong>
-                    <p style="font-size:.82rem; color:var(--pg-gray-600); margin-top:.25rem;">10,000 adjusters × 50 daily inferences × 260 days = 130M inferences/year at $0 cloud cost.</p>
+                    <p style="font-size:.82rem; color:var(--pg-gray-600); margin-top:.25rem;">10,000 adjusters × 50 daily inferences × 260 days = 130M inferences/year at $0 cloud inference cost.</p>
                 </div>
             </div>
         </div>
@@ -606,16 +642,34 @@
             </div>
         </div>
 
+        <!-- Customer Profile Banner -->
+        <div class="card" id="customerCard" style="background: linear-gradient(135deg, #f0f7ff 0%, #e8f4fd 100%); border-left: 4px solid var(--pg-blue); margin-bottom: 1rem;">
+            <div style="display:flex; justify-content:space-between; align-items:flex-start; flex-wrap:wrap; gap:.75rem;">
+                <div>
+                    <div style="font-weight:700; font-size:1rem; color:var(--pg-blue-dark);" id="custName">Loading...</div>
+                    <div style="font-size:.8rem; color:var(--pg-gray-700); margin-top:.25rem;" id="custPolicy"></div>
+                    <div style="font-size:.78rem; color:var(--pg-gray-600); margin-top:.15rem;" id="custAddress"></div>
+                </div>
+                <div style="text-align:right; font-size:.75rem; color:var(--pg-gray-700);">
+                    <div><strong>Dwelling:</strong> <span id="custCovA"></span></div>
+                    <div><strong>Deductible:</strong> <span id="custDeductible"></span></div>
+                    <div><strong>Prior Claims:</strong> <span id="custPriorClaims"></span></div>
+                    <div style="margin-top:.25rem; color:var(--pg-orange, #c65102);" id="custRiskNotes"></div>
+                </div>
+            </div>
+        </div>
+
         <div class="two-col">
             <div class="card">
                 <div class="card-header"><span class="icon">📸</span> Upload Damage Photo</div>
                 <div class="upload-zone" id="uploadZone" onclick="document.getElementById('fileInput').click()">
                     <div class="icon">📁</div>
-                    <p>Drop a photo here or click to upload</p>
-                    <p style="font-size:.75rem; color:var(--pg-gray-600); margin-top:.25rem;">JPG, PNG, WebP up to 16 MB</p>
+                    <p>Drop photos here or click to upload (up to 5)</p>
+                    <p style="font-size:.75rem; color:var(--pg-gray-600); margin-top:.25rem;">JPG, PNG, WebP up to 16 MB each</p>
                 </div>
-                <input type="file" id="fileInput" accept="image/*" class="hidden" onchange="handleFileUpload(this)">
-                <img id="previewImg" class="preview-img hidden" alt="Preview">
+                <input type="file" id="fileInput" accept="image/*" multiple class="hidden" onchange="handleFileUpload(this)">
+                <div class="photo-grid" id="photoGrid"></div>
+                <div class="photo-count" id="photoCount"></div>
 
                 <div class="form-group" style="margin-top: 1rem;">
                     <label>Damage Type</label>
@@ -630,8 +684,8 @@
                 </div>
 
                 <div class="form-group">
-                    <label>Field Description</label>
-                    <textarea id="claimDescription" rows="4" placeholder="Describe the damage you observe, or click the microphone to dictate..."></textarea>
+                    <label>Notes</label>
+                    <textarea id="claimDescription" rows="4" placeholder="Your field notes: context, observations, measurements, circumstances... (photo analysis happens separately and is combined automatically)"></textarea>
                     <div class="mic-row">
                         <button type="button" class="btn-mic" id="micBtn" onclick="toggleVoice()">
                             <span class="mic-icon" id="micIcon">🎤</span>
@@ -644,7 +698,10 @@
                 <button class="btn btn-primary" id="assessBtn" onclick="submitClaim()">
                     <span>⚡</span> Assess with On-Device AI
                 </button>
-                <div class="loading-text hidden" id="claimLoading"><div class="spinner"></div> Analysing on NPU…</div>
+                <div class="loading-text hidden" id="claimLoading"><div class="spinner"></div> Analysing on CPU while NPU handles photos…</div>
+                <div class="loading-text hidden" id="photoAnalyzing" style="color: var(--pg-blue-600); font-size:.8rem;">
+                    <div class="spinner"></div> Photo being analyzed by NPU vision — you can type your notes while it works…
+                </div>
             </div>
 
             <div class="card">
@@ -653,10 +710,19 @@
                     Assessment will appear here after you describe the damage and click "Assess with On-Device AI".
                 </div>
                 <div class="result-meta hidden" id="claimMeta">
+                    <span>🖥️ <span id="claimEngine">—</span></span>
                     <span>⚡ <span id="claimTokens">0</span> tokens</span>
                     <span>⏱ <span id="claimLatency">0</span> ms</span>
                     <span>💰 <span id="claimCost">$0.00</span> cloud cost saved</span>
                     <span>🔒 Processed on-device</span>
+                </div>
+                <div class="hidden" id="approvalSection" style="margin-top:1rem; padding:1rem; border:1px solid var(--pg-gray-300); border-radius:8px; background:var(--pg-gray-50);">
+                    <p style="margin:0 0 .5rem; font-weight:600;">📋 Report ready — submit for supervisor approval?</p>
+                    <p style="margin:0 0 .75rem; font-size:.85rem; color:var(--pg-gray-600);">This will send the claim report to your supervisor via Teams/Outlook for review and approval.</p>
+                    <button id="approvalBtn" onclick="submitForApproval()" class="btn btn-primary" style="background:#0078d4;">
+                        ✅ Submit for Approval
+                    </button>
+                    <span id="approvalStatus" style="margin-left:1rem; font-size:.85rem;"></span>
                 </div>
             </div>
         </div>
@@ -675,19 +741,31 @@
         <div class="value-banner">
             <div class="icon">💬</div>
             <div>
-                <h2>Policy Assistant — On-Device</h2>
-                <p>Ask about coverage, deductibles, claims processes, or insurance terminology. The AI runs entirely on the NPU — no data leaves this device. Perfect for sensitive customer conversations in the field.</p>
+                <h2>Policy Assistant — Hybrid AI</h2>
+                <p>Ask about coverage, deductibles, claims processes, or customer history. AI reasoning runs entirely on the NPU — when CRM is connected, organizational data enriches the response without exposing sensitive inference to the cloud.</p>
             </div>
         </div>
 
         <div class="card">
-            <div class="card-header"><span class="icon">🤖</span> Chat with Zava AI</div>
+            <div class="card-header" style="display:flex; justify-content:space-between; align-items:center;">
+                <span><span class="icon">🤖</span> Chat with Zava AI</span>
+                <label style="display:flex; align-items:center; gap:.5rem; font-size:.82rem; cursor:pointer;">
+                    <input type="checkbox" id="crmToggle" onchange="updateCrmStatus()">
+                    <span id="crmLabel">🔗 Connect securely to Microsoft WorkIQ</span>
+                </label>
+            </div>
+            <div id="crmBanner" class="hidden" style="padding:.5rem .75rem; background:#e8f4fd; border-radius:6px; margin-bottom:.75rem; font-size:.82rem; border:1px solid #b3d9f2;">
+                🌐 <strong>Hybrid mode:</strong> M365 data flows in → AI processes locally on NPU → PII never leaves device
+            </div>
             <div class="chat-messages" id="chatMessages">
                 <div class="msg msg-ai">
-                    👋 Hi, I'm your Zava AI assistant running on-device! Ask me anything about insurance policies, claims, or coverage. All processing happens right here on the NPU — no cloud, no data leaves this device.
+                    👋 Hi, I'm your Zava AI assistant! Ask me anything about insurance policies, claims, or coverage.
+                    <br><br>
+                    💡 <strong>Tip:</strong> Toggle "Connect securely to Microsoft WorkIQ" above to enrich answers with customer history, prior claims, and M365 data — while keeping all AI reasoning on-device.
                     <div class="meta">
-                        <span>🔒 On-device</span>
+                        <span>🔒 On-device AI</span>
                         <span>✈️ Works offline</span>
+                        <span>🔗 CRM optional</span>
                     </div>
                 </div>
             </div>
@@ -698,10 +776,10 @@
             <div style="margin-top: .75rem;">
                 <span style="font-size:.78rem; color:var(--pg-gray-600);">Try:</span>
                 <div class="btn-group" style="margin-top: .35rem;">
-                    <button class="btn btn-secondary btn-sm" onclick="quickChat('What does comprehensive coverage include for auto insurance?')">Comprehensive coverage</button>
-                    <button class="btn btn-secondary btn-sm" onclick="quickChat('How should a field adjuster handle a water damage claim?')">Water damage claims</button>
-                    <button class="btn btn-secondary btn-sm" onclick="quickChat('Explain the difference between actual cash value and replacement cost')">ACV vs replacement</button>
-                    <button class="btn btn-secondary btn-sm" onclick="quickChat('What are the typical deductible options for homeowners insurance?')">Deductible options</button>
+                    <button class="btn btn-secondary btn-sm" onclick="quickChat('Has this customer filed any claims before?')">Prior claims</button>
+                    <button class="btn btn-secondary btn-sm" onclick="quickChat('What contractors are available for water damage repair?')">Vendor network</button>
+                    <button class="btn btn-secondary btn-sm" onclick="quickChat('Does this policy cover mold damage and water backup?')">Coverage details</button>
+                    <button class="btn btn-secondary btn-sm" onclick="quickChat('What communications have we had with this customer recently?')">Recent contact</button>
                 </div>
             </div>
         </div>
@@ -719,7 +797,16 @@
 
         <div class="two-col">
             <div class="card">
-                <div class="card-header"><span class="icon">📝</span> Document Input</div>
+                <div class="card-header" style="display:flex; justify-content:space-between; align-items:center;">
+                    <span><span class="icon">📝</span> Document Input</span>
+                    <label style="display:flex; align-items:center; gap:.5rem; font-size:.82rem; cursor:pointer;">
+                        <input type="checkbox" id="docCrmToggle" onchange="updateDocCrmStatus()">
+                        <span id="docCrmLabel">🔗 Connect securely to Microsoft WorkIQ</span>
+                    </label>
+                </div>
+                <div id="docCrmBanner" class="hidden" style="padding:.5rem .75rem; background:#e8f4fd; border-radius:6px; margin-bottom:.75rem; font-size:.82rem; border:1px solid #b3d9f2;">
+                    🌐 <strong>Hybrid mode:</strong> M365 context enriches analysis → AI processes locally on NPU → documents never leave device
+                </div>
                 <div class="form-group">
                     <label>Analysis Type</label>
                     <select id="docTask">
@@ -894,10 +981,10 @@
                 </div>
             </div>
             <div class="card">
-                <div class="card-header"><span class="icon">✈️</span> Airplane Mode Test</div>
+                <div class="card-header"><span class="icon">✈️</span> Offline + Online Modes</div>
                 <p style="font-size: .88rem; color: var(--pg-gray-600); line-height: 1.6;">
-                    <strong>The ultimate proof point.</strong> Turn off Wi-Fi, enable airplane mode, then use any tab. The AI continues working because it's running entirely on the NPU — no cloud dependency.<br><br>
-                    This is the demo moment that changes the conversation every time.
+                    <strong>Core AI works offline.</strong> Turn off Wi-Fi and the Claims AI, Policy Assistant, and Document Analyzer all keep working — inference runs entirely on the NPU.<br><br>
+                    <strong>WorkIQ enriches when connected.</strong> Toggle on Microsoft WorkIQ to pull in customer history, CRM data, and M365 context — while AI reasoning still stays on-device. Best of both worlds.
                 </p>
                 <button class="btn btn-primary" style="margin-top: 1rem;" onclick="switchTab('claims')">
                     <span>✈️</span> Try Claims AI Offline
@@ -910,7 +997,7 @@
 
 <!-- ════════════════ FOOTER ════════════════ -->
 <footer class="footer">
-    On-Device AI Demo · Powered by Microsoft Surface Copilot+ PC &amp; Foundry Local · All AI processing runs on the NPU · PROTOTYPE — Not for production use · Zava Insurance
+    Hybrid AI Demo · Processed locally on NPU · Connected securely via Microsoft WorkIQ · Powered by Copilot+ PC &amp; Foundry Local · PROTOTYPE — Not for production use · Zava Insurance
 </footer>
 
 <!-- ════════════════ SCRIPTS ════════════════ -->
@@ -940,18 +1027,18 @@ async function checkStatus() {
         _lastStatus = data;
         const dot = document.getElementById('statusDot');
         const lbl = document.getElementById('statusLabel');
-        if (data.foundry_connected && data.hardware === 'NPU (QNN)') {
+        if (data.npu_available) {
             dot.className = 'status-dot';
             lbl.textContent = 'NPU Online';
-            dot.title = data.model + ' (NPU)';
+            dot.title = data.model + ' (NPU – Phi Silica)';
         } else if (data.foundry_connected) {
             dot.className = 'status-dot offline';
             lbl.textContent = 'CPU Mode';
-            dot.title = data.model + ' (CPU – not running on NPU)';
+            dot.title = data.model + ' (CPU fallback)';
         } else {
             dot.className = 'status-dot offline';
             lbl.textContent = 'Preview Mode';
-            dot.title = 'Foundry Local not detected';
+            dot.title = 'No AI engine detected';
         }
     } catch {
         document.getElementById('statusDot').className = 'status-dot offline';
@@ -963,16 +1050,131 @@ checkStatus();
 setInterval(checkStatus, 30000);
 
 // ── Claims AI ────────────────────────────────────────────────
+// Load customer profile
+fetch('/api/customer').then(r => r.json()).then(c => {
+    document.getElementById('custName').textContent = c.name;
+    document.getElementById('custPolicy').textContent = `${c.policy_number} • ${c.policy_type}`;
+    document.getElementById('custAddress').textContent = `${c.address} — ${c.property_type}`;
+    document.getElementById('custCovA').textContent = c.coverage_a;
+    document.getElementById('custDeductible').textContent = c.deductible;
+    document.getElementById('custPriorClaims').textContent = `${c.prior_claims_count} (${c.prior_claims.map(p => p.type).join(', ')})`;
+    document.getElementById('custRiskNotes').textContent = c.risk_notes ? `⚠ ${c.risk_notes}` : '';
+}).catch(() => {
+    document.getElementById('custName').textContent = 'Customer data unavailable';
+});
+
+let _uploadedFiles = [];  // Track uploaded filenames for analysis
+const MAX_PHOTOS = 5;
+
+function _updatePhotoCount() {
+    const el = document.getElementById('photoCount');
+    if (_uploadedFiles.length === 0) { el.textContent = ''; return; }
+    el.textContent = `${_uploadedFiles.length} / ${MAX_PHOTOS} photos`;
+}
+
+function _addThumb(dataUrl, fname) {
+    const grid = document.getElementById('photoGrid');
+    const div = document.createElement('div');
+    div.className = 'photo-thumb';
+    div.id = 'thumb-' + fname;
+    div.innerHTML = `<img src="${dataUrl}" alt="Photo">` +
+        `<button class="remove-btn" onclick="removePhoto('${fname}')" title="Remove">✕</button>` +
+        `<span class="status-dot pending" id="dot-${fname}"></span>`;
+    grid.appendChild(div);
+}
+
+function removePhoto(fname) {
+    _uploadedFiles = _uploadedFiles.filter(f => f !== fname);
+    const thumb = document.getElementById('thumb-' + fname);
+    if (thumb) thumb.remove();
+    _updatePhotoCount();
+    if (_uploadedFiles.length === 0) {
+        document.getElementById('photoAnalyzing').classList.add('hidden');
+    }
+}
+
 function handleFileUpload(input) {
-    const file = input.files[0];
-    if (!file) return;
-    const reader = new FileReader();
-    reader.onload = e => {
-        const img = document.getElementById('previewImg');
-        img.src = e.target.result;
-        img.classList.remove('hidden');
-    };
-    reader.readAsDataURL(file);
+    const files = Array.from(input.files);
+    if (!files.length) return;
+    const remaining = MAX_PHOTOS - _uploadedFiles.length;
+    if (remaining <= 0) { alert(`Maximum ${MAX_PHOTOS} photos allowed.`); return; }
+    const batch = files.slice(0, remaining);
+    if (files.length > remaining) alert(`Only ${remaining} more photo(s) can be added. Extra files skipped.`);
+
+    batch.forEach(file => {
+        // Show thumbnail immediately
+        const reader = new FileReader();
+        reader.onload = e => {
+            const tempId = 'pending-' + Date.now() + Math.random().toString(36).slice(2,6);
+            _addThumb(e.target.result, tempId);
+
+            // Upload to server
+            const formData = new FormData();
+            formData.append('file', file);
+            formData.append('damage_type', document.getElementById('damageType').value);
+            fetch('/api/upload-image', { method: 'POST', body: formData })
+                .then(r => r.json())
+                .then(data => {
+                    if (data.filename) {
+                        // Replace temp thumb with real filename
+                        const oldThumb = document.getElementById('thumb-' + tempId);
+                        if (oldThumb) {
+                            oldThumb.id = 'thumb-' + data.filename;
+                            oldThumb.querySelector('.remove-btn').setAttribute('onclick', `removePhoto('${data.filename}')`);
+                            const dot = oldThumb.querySelector('.status-dot');
+                            if (dot) dot.id = 'dot-' + data.filename;
+                        }
+                        // Replace temp id in array or push
+                        const idx = _uploadedFiles.indexOf(tempId);
+                        if (idx >= 0) _uploadedFiles[idx] = data.filename;
+                        else _uploadedFiles.push(data.filename);
+                        _pollAnalysis();
+                    }
+                });
+            _uploadedFiles.push(tempId);
+            _updatePhotoCount();
+        };
+        reader.readAsDataURL(file);
+    });
+    input.value = '';  // Reset so same files can be re-selected
+}
+
+let _pollInterval = null;
+let _photoReady = false;
+function _pollAnalysis() {
+    if (_pollInterval) return;
+    _photoReady = false;
+    document.getElementById('photoAnalyzing').classList.remove('hidden');
+    _pollInterval = setInterval(async () => {
+        // Only poll for real filenames (not temp pending-* ids)
+        const realFiles = _uploadedFiles.filter(f => !f.startsWith('pending-'));
+        if (realFiles.length === 0) { return; }
+        try {
+            const res = await fetch('/api/analyze-photos-status', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ filenames: realFiles }),
+            });
+            const data = await res.json();
+            // Update per-photo status dots
+            if (data.details) {
+                for (const [fname, status] of Object.entries(data.details)) {
+                    const dot = document.getElementById('dot-' + fname);
+                    if (dot && status) { dot.className = 'status-dot done'; }
+                }
+            }
+            if (data.analyzed >= data.total && data.total > 0) {
+                clearInterval(_pollInterval);
+                _pollInterval = null;
+                _photoReady = true;
+                document.getElementById('photoAnalyzing').innerHTML =
+                    `<span style="color:green;">✓</span> ${data.total} photo(s) analyzed — details will be included in assessment automatically.`;
+            } else {
+                document.getElementById('photoAnalyzing').innerHTML =
+                    `<div class="spinner"></div> Analyzing photos on NPU (${data.analyzed || 0}/${data.total})… you can type notes while it works.`;
+            }
+        } catch(e) {}
+    }, 2000);
 }
 
 // Drag & drop
@@ -980,55 +1182,120 @@ const uploadZone = document.getElementById('uploadZone');
 ['dragenter','dragover'].forEach(e => uploadZone.addEventListener(e, ev => { ev.preventDefault(); uploadZone.classList.add('dragover'); }));
 ['dragleave','drop'].forEach(e => uploadZone.addEventListener(e, ev => { ev.preventDefault(); uploadZone.classList.remove('dragover'); }));
 uploadZone.addEventListener('drop', ev => {
-    const file = ev.dataTransfer.files[0];
-    if (file) {
-        document.getElementById('fileInput').files = ev.dataTransfer.files;
-        handleFileUpload(document.getElementById('fileInput'));
+    const files = ev.dataTransfer.files;
+    if (files.length) {
+        const dt = new DataTransfer();
+        for (let i = 0; i < files.length; i++) dt.items.add(files[i]);
+        const input = document.getElementById('fileInput');
+        input.files = dt.files;
+        handleFileUpload(input);
     }
 });
 
 async function submitClaim() {
+    const realFiles = _uploadedFiles.filter(f => !f.startsWith('pending-'));
     const desc = document.getElementById('claimDescription').value.trim();
-    if (!desc) { alert('Please enter a damage description.'); return; }
+    if (!desc && !realFiles.length) { alert('Please enter notes or upload a photo.'); return; }
 
     const btn = document.getElementById('assessBtn');
-    if (btn.disabled) return; // prevent double-click
+    if (btn.disabled) return;
     const loading = document.getElementById('claimLoading');
+    const resultBox = document.getElementById('claimResult');
     btn.disabled = true;
     loading.classList.remove('hidden');
+    resultBox.textContent = '';
+    document.getElementById('claimMeta').classList.add('hidden');
 
     try {
-        const controller = new AbortController();
-        const timeout = setTimeout(() => controller.abort(), 120000);
-        const res = await fetch('/api/assess-claim', {
+        const res = await fetch('/api/assess-claim-stream', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
                 description: desc,
                 damage_type: document.getElementById('damageType').value,
+                photo_files: _uploadedFiles.filter(f => !f.startsWith('pending-')),
             }),
-            signal: controller.signal,
         });
-        clearTimeout(timeout);
-        const data = await res.json();
-        if (data.error) {
-            document.getElementById('claimResult').textContent = 'Error: ' + data.error;
-        } else {
-            document.getElementById('claimResult').textContent = data.text;
-            document.getElementById('claimTokens').textContent = data.tokens;
-            document.getElementById('claimLatency').textContent = data.latency_ms;
-            document.getElementById('claimCost').textContent = data.cloud_cost_saved;
-            document.getElementById('claimMeta').classList.remove('hidden');
+
+        const reader = res.body.getReader();
+        const decoder = new TextDecoder();
+        let buffer = '';
+
+        while (true) {
+            const { done, value } = await reader.read();
+            if (done) break;
+            buffer += decoder.decode(value, { stream: true });
+
+            // Process complete SSE lines
+            const lines = buffer.split('\n');
+            buffer = lines.pop(); // keep incomplete line in buffer
+            for (const line of lines) {
+                if (!line.startsWith('data: ')) continue;
+                try {
+                    const evt = JSON.parse(line.slice(6));
+                    if (evt.error) {
+                        resultBox.textContent += '\n[Error: ' + evt.error + ']';
+                    } else if (evt.done) {
+                        // Final metadata
+                        const engineLabels = { cpu: 'CPU (Foundry Local)', npu: 'NPU (Phi Silica)', unknown: 'On-device' };
+                        document.getElementById('claimEngine').textContent = engineLabels[evt.engine] || evt.engine;
+                        document.getElementById('claimTokens').textContent = evt.tokens;
+                        document.getElementById('claimLatency').textContent = evt.latency_ms;
+                        document.getElementById('claimCost').textContent = evt.cloud_cost_saved;
+                        document.getElementById('claimMeta').classList.remove('hidden');
+                        // Show approval button
+                        document.getElementById('approvalSection').classList.remove('hidden');
+                        document.getElementById('approvalStatus').textContent = '';
+                        document.getElementById('approvalBtn').disabled = false;
+                    } else if (evt.chunk) {
+                        resultBox.textContent += evt.chunk;
+                    }
+                } catch(e) { /* skip malformed */ }
+            }
         }
     } catch (err) {
-        if (err.name === 'AbortError') {
-            document.getElementById('claimResult').textContent = 'The model is still loading — please wait a moment and try again.';
-        } else {
-            document.getElementById('claimResult').textContent = 'Connection issue — the AI model may still be starting up. Please try again in a few seconds.';
-        }
+        resultBox.textContent = 'Connection issue — please try again.';
     } finally {
         btn.disabled = false;
         loading.classList.add('hidden');
+    }
+}
+
+async function submitForApproval() {
+    const btn = document.getElementById('approvalBtn');
+    const status = document.getElementById('approvalStatus');
+    btn.disabled = true;
+    status.textContent = '⏳ Submitting...';
+
+    const reportText = document.getElementById('claimResult').textContent;
+    const damageType = document.getElementById('damageType').value;
+    const fieldNotes = document.getElementById('claimDescription').value.trim();
+    const photoFiles = _uploadedFiles.filter(f => !f.startsWith('pending-'));
+
+    try {
+        const res = await fetch('/api/submit-approval', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                report: reportText,
+                damage_type: damageType,
+                field_notes: fieldNotes,
+                photo_files: photoFiles,
+            }),
+        });
+        const data = await res.json();
+        if (data.success) {
+            status.textContent = '✅ Submitted! Approval request sent to supervisor.';
+            status.style.color = '#107c10';
+        } else {
+            status.textContent = '❌ ' + (data.error || 'Submission failed');
+            status.style.color = '#d13438';
+            btn.disabled = false;
+        }
+    } catch (err) {
+        status.textContent = '❌ Connection error';
+        status.style.color = '#d13438';
+        btn.disabled = false;
     }
 }
 
@@ -1250,6 +1517,7 @@ async function sendChat() {
     _chatBusy = true;
     input.value = '';
 
+    const useCrm = document.getElementById('crmToggle').checked;
     const messages = document.getElementById('chatMessages');
     // User bubble
     const userDiv = document.createElement('div');
@@ -1260,7 +1528,9 @@ async function sendChat() {
     // Loading bubble
     const loadDiv = document.createElement('div');
     loadDiv.className = 'msg msg-ai';
-    loadDiv.innerHTML = '<div class="loading-text"><div class="spinner"></div> Thinking on NPU…</div>';
+    loadDiv.innerHTML = useCrm
+        ? '<div class="loading-text"><div class="spinner"></div> Fetching CRM data… then reasoning on NPU…</div>'
+        : '<div class="loading-text"><div class="spinner"></div> Thinking on NPU…</div>';
     messages.appendChild(loadDiv);
     messages.scrollTop = messages.scrollHeight;
 
@@ -1270,13 +1540,19 @@ async function sendChat() {
         const res = await fetch('/api/chat', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ message: msg }),
+            body: JSON.stringify({ message: msg, use_crm: useCrm }),
             signal: controller.signal,
         });
         clearTimeout(timeout);
         const data = await res.json();
-        loadDiv.innerHTML = data.text +
-            `<div class="meta"><span>⚡ ${data.tokens} tokens</span><span>⏱ ${data.latency_ms} ms</span><span>💰 ${data.cloud_cost_saved} saved</span><span>🔒 On-device</span></div>`;
+        let metaHtml = `<div class="meta"><span>⚡ ${data.tokens} tokens</span><span>⏱ ${data.latency_ms} ms</span><span>💰 ${data.cloud_cost_saved} saved</span>`;
+        if (data.crm_enriched) {
+            metaHtml += `<span>🌐 CRM: ${data.crm_source}</span><span>🔒 AI on-device</span>`;
+        } else {
+            metaHtml += `<span>🔒 100% on-device</span>`;
+        }
+        metaHtml += '</div>';
+        loadDiv.innerHTML = data.text + metaHtml;
     } catch (err) {
         if (err.name === 'AbortError') {
             loadDiv.innerHTML = '⏳ The model is still loading — please wait a moment and try again.';
@@ -1287,6 +1563,31 @@ async function sendChat() {
         _chatBusy = false;
     }
     messages.scrollTop = messages.scrollHeight;
+}
+
+function updateCrmStatus() {
+    const on = document.getElementById('crmToggle').checked;
+    document.getElementById('crmLabel').textContent = on ? '🌐 Microsoft WorkIQ Connected' : '🔗 Connect securely to Microsoft WorkIQ';
+    document.getElementById('crmBanner').classList.toggle('hidden', !on);
+    updateWorkiqIndicator();
+}
+
+function updateDocCrmStatus() {
+    const on = document.getElementById('docCrmToggle').checked;
+    document.getElementById('docCrmLabel').textContent = on ? '🌐 Microsoft WorkIQ Connected' : '🔗 Connect securely to Microsoft WorkIQ';
+    document.getElementById('docCrmBanner').classList.toggle('hidden', !on);
+    updateWorkiqIndicator();
+}
+
+function updateWorkiqIndicator() {
+    const chatOn = document.getElementById('crmToggle').checked;
+    const docOn = document.getElementById('docCrmToggle').checked;
+    const on = chatOn || docOn;
+    const dot = document.getElementById('workiqDot');
+    const lbl = document.getElementById('workiqLabel');
+    dot.style.background = on ? '#0078d4' : '#888';
+    dot.title = on ? 'WorkIQ Connected' : 'WorkIQ Disconnected';
+    lbl.textContent = on ? 'WorkIQ Connected' : 'WorkIQ Off';
 }
 
 function quickChat(msg) {
@@ -1301,6 +1602,7 @@ async function analyzeDoc() {
     if (!text || _docBusy) { if (!text) alert('Please paste document text.'); return; }
     _docBusy = true;
 
+    const useCrm = document.getElementById('docCrmToggle').checked;
     const loading = document.getElementById('docLoading');
     loading.classList.remove('hidden');
 
@@ -1313,6 +1615,7 @@ async function analyzeDoc() {
             body: JSON.stringify({
                 text: text,
                 task: document.getElementById('docTask').value,
+                use_crm: useCrm,
             }),
             signal: controller.signal,
         });
@@ -1421,7 +1724,7 @@ async function refreshDashboard() {
         document.getElementById('sysStatus').innerHTML = `
             <div style="display:grid; gap:.5rem;">
                 <div><strong>Foundry Local:</strong> ${s.foundry_connected ? '✅ Connected' : '⚠️ Not connected'}</div>
-                <div><strong>Hardware:</strong> ${s.hardware === 'NPU (QNN)' ? '✅ NPU (QNN Snapdragon)' : s.hardware === 'CPU' ? '⚠️ CPU only' : '❌ None'}</div>
+                <div><strong>Hardware:</strong> ${s.hardware.includes('NPU') ? '✅ ' + s.hardware : s.hardware === 'CPU' ? '⚠️ CPU only' : '❌ None'}</div>
                 <div><strong>Model:</strong> ${s.model}</div>
                 <div><strong>Endpoint:</strong> ${s.endpoint}</div>
                 <div><strong>Mode:</strong> ${s.mode}</div>

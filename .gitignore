@@ -23,6 +23,12 @@ desktop.ini
 # Uploads (user-generated during demo)
 uploads/
 
+# Reports (generated during demo)
+reports/
+
+# Logs
+*.log
+
 # Distribution
 *.egg-info/
 dist/
