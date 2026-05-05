@@ -369,60 +369,261 @@ def _fetch_crm_context(user_question: str) -> tuple:
 
 
 def _get_simulated_crm_data(question: str, customer: dict) -> str:
-    """Simulated CRM/M365 data for demo when WorkIQ bridge isn't running."""
+    """Simulated CRM/M365 data for demo when WorkIQ bridge isn't running.
+    Designed to feel like live organizational data pulled from M365, CRM, and telephony."""
     q = question.lower()
 
-    # Prior claims history
+    # ── Call transcript / initial intake ──
+    if any(kw in q for kw in ["call", "transcript", "intake", "reported", "initial", "phone", "first notice"]):
+        return (
+            "📞 CALL TRANSCRIPT — First Notice of Loss (FNOL)\n"
+            "Ticket: TKT-2024-05-02-1847 | Duration: 8m 42s | Agent: Priya Sharma\n"
+            "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n"
+            "[00:00] Agent: Thank you for calling Zava Insurance, this is Priya. How can I help?\n"
+            "[00:05] Customer: Hi, I need to file a claim. We had a bad storm last night and\n"
+            "  there's water coming into our basement. The sump pump couldn't keep up.\n"
+            "[00:18] Agent: I'm sorry to hear that, Mrs. Mitchell. Are you and your family safe?\n"
+            "[00:22] Customer: Yes, we're fine. But there's about 2 inches of standing water\n"
+            "  down there. I noticed the carpet is soaked and there's a smell already.\n"
+            "[00:35] Agent: I'm pulling up your policy now... I see you have the water backup\n"
+            "  endorsement. That's good. Can you tell me when you first noticed the water?\n"
+            "[00:48] Customer: Around 6am this morning when I went down to do laundry. The\n"
+            "  storm was really bad around 2-3am. I also noticed the electrical outlet near\n"
+            "  the floor has water around it which worries me.\n"
+            "[01:05] Agent: Absolutely — please do not use that outlet or touch it. I'm going to\n"
+            "  flag that as a safety concern. Have you been able to turn off the breaker for that area?\n"
+            "[01:15] Customer: Yes, my husband turned off the basement breaker this morning.\n"
+            "[01:22] Agent: Good. I'm filing this as a water damage claim. I'm dispatching an\n"
+            "  adjuster for tomorrow morning. In the meantime, if you can take photos that would\n"
+            "  be very helpful for the assessment.\n"
+            "[01:40] Customer: I took some already. Can I upload them somewhere?\n"
+            "[01:45] Agent: Yes, I'll send you a link to our claims portal right after this call.\n"
+            "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n"
+            "FNOL Summary: Water intrusion via basement, sump pump failure during storm.\n"
+            "Safety flag: Electrical outlet near standing water. Breaker isolated by homeowner.\n"
+            "Disposition: Claim opened, adjuster dispatched, photo upload link sent.\n"
+        )
+
+    # ── CRM ticket / claim status ──
+    if any(kw in q for kw in ["ticket", "claim status", "status", "open claim", "current claim", "filed"]):
+        return (
+            "🎫 CRM TICKET: TKT-2024-05-02-1847\n"
+            "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n"
+            "Claim #: CLM-2024-09283 | Status: OPEN — Assessment Pending\n"
+            "Filed: May 2, 2024 at 9:14 AM CT | Channel: Phone (inbound)\n"
+            "Customer: Sarah Mitchell | Policy: ZAV-HO3-2024-08847\n"
+            "Assigned Adjuster: David Park (field) | Supervisor: Rachel Torres\n"
+            "\n"
+            "TIMELINE:\n"
+            "  May 2, 9:14 AM — FNOL call received (Agent: Priya Sharma)\n"
+            "  May 2, 9:22 AM — Claim created, auto-assigned to David Park\n"
+            "  May 2, 9:25 AM — Photo upload link emailed to customer\n"
+            "  May 2, 11:03 AM — Customer uploaded 4 photos via portal\n"
+            "  May 2, 2:30 PM — Coverage verification complete (HO-46 confirmed)\n"
+            "  May 3, 8:00 AM — Field inspection scheduled\n"
+            "  May 3, 10:15 AM — David Park on-site, additional photos taken\n"
+            "  May 3, 10:45 AM — Electrical safety concern escalated to supervisor\n"
+            "\n"
+            "PRIORITY: Medium-High (safety concern + active water damage)\n"
+            "NEXT ACTION: AI assessment review → supervisor approval → mitigation dispatch\n"
+        )
+
+    # ── Adjuster field notes ──
+    if any(kw in q for kw in ["adjuster", "field", "inspection", "on-site", "visit", "notes"]):
+        return (
+            "📋 FIELD ADJUSTER NOTES — David Park\n"
+            "Site Visit: May 3, 2024 | 10:15 AM - 11:00 AM\n"
+            "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n"
+            "OBSERVATIONS:\n"
+            "- Approximately 2-3 inches of standing water in NW corner of basement\n"
+            "- Carpet saturated across ~60% of basement floor (est. 800 sq ft affected)\n"
+            "- Visible water line on drywall, approximately 4 inches high\n"
+            "- Musty odor present — early mold risk, recommend 48hr remediation window\n"
+            "- Sump pump present but motor burned out (overwork during storm)\n"
+            "- SAFETY: One electrical outlet at baseboard level partially submerged\n"
+            "  → Breaker already isolated by homeowner ✓\n"
+            "  → Recommend licensed electrician before power restoration\n"
+            "- Foundation: No visible cracks, water appears to have entered via\n"
+            "  window well overflow + sump pump failure (dual cause)\n"
+            "\n"
+            "PHOTOS TAKEN: 12 (uploaded to claim file)\n"
+            "PRELIMINARY ESTIMATE: $11,000 - $15,000 (pending detailed scope)\n"
+            "RECOMMENDATION: Approve emergency mitigation immediately — mold risk\n"
+            "  increases significantly after 48 hours of standing water.\n"
+        )
+
+    # ── Prior claims history ──
     if any(kw in q for kw in ["prior", "history", "previous", "filed before", "past claim"]):
         return (
-            "PRIOR CLAIMS HISTORY:\n"
-            f"- 2022-03-15: Wind damage claim (CLM-2022-4421) — $8,200 paid, closed\n"
-            f"- 2023-08-02: Theft claim (CLM-2023-7789) — $3,450 paid, closed\n"
-            f"- No fraud flags on record. Customer in good standing since 2019.\n"
-            f"- Payment history: All premiums current, auto-pay enrolled.\n"
+            "📁 PRIOR CLAIMS HISTORY — Sarah Mitchell\n"
+            "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n"
+            "CLM-2022-4421 | June 2022 | Wind/Hail Damage\n"
+            "  Cause: Severe thunderstorm, shingle damage + gutter separation\n"
+            "  Paid: $8,200 | Deductible: $2,500 applied\n"
+            "  Contractor: BuildRight NW | Duration: Filed → Closed in 18 days\n"
+            "  Notes: Straightforward claim, no disputes, roof fully replaced 2019\n"
+            "\n"
+            "CLM-2020-2198 | Nov 2020 | Water Damage (pipe burst)\n"
+            "  Cause: Frozen pipe in upstairs bathroom during cold snap\n"
+            "  Paid: $4,100 | Deductible: $2,500 applied\n"
+            "  Contractor: AquaRestore LLC | Duration: Filed → Closed in 22 days\n"
+            "  Notes: Minor damage, customer very cooperative with documentation\n"
+            "\n"
+            "FRAUD ASSESSMENT: No flags | Pattern analysis: Normal frequency for region\n"
+            "CUSTOMER STANDING: Excellent — premiums current since 2019, no disputes\n"
+            "LIFETIME VALUE: $16,200 in premiums paid, $12,300 in claims (ratio: 1.32x)\n"
         )
 
-    # Contractor/vendor info
-    if any(kw in q for kw in ["contractor", "vendor", "repair", "estimate", "plumber"]):
+    # ── Contractor/vendor info ──
+    if any(kw in q for kw in ["contractor", "vendor", "repair", "estimate", "plumber", "electrician"]):
         return (
-            "PREFERRED VENDOR NETWORK:\n"
-            f"- Portland area water damage: AquaRestore LLC (503-555-0142) — avg response 4hrs\n"
-            f"- Mold remediation: CleanAir Pros (503-555-0198) — certified, insured\n"
-            f"- General contractor: BuildRight NW (503-555-0211) — 4.8★ rating\n"
-            f"- Last contractor note (Teams, 2 days ago): 'Estimate for Mitchell property "
-            f"came in at $12,400 for full water damage restoration including drywall replacement.'\n"
+            "🔧 PREFERRED VENDOR NETWORK — Austin, TX Region\n"
+            "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n"
+            "WATER DAMAGE / RESTORATION:\n"
+            "  AquaRestore LLC — (512) 555-0142\n"
+            "  Rating: 4.9★ | Avg Response: 4hrs | Zava-certified\n"
+            "  Note: Used by this customer in 2020 claim, good experience\n"
+            "\n"
+            "MOLD REMEDIATION:\n"
+            "  CleanAir Pros — (512) 555-0198\n"
+            "  Rating: 4.7★ | IICRC Certified | Avg job: $3,200\n"
+            "\n"
+            "ELECTRICAL (Licensed):\n"
+            "  Spark Safe Electric — (512) 555-0234\n"
+            "  Rating: 4.8★ | Emergency available | Insured to $2M\n"
+            "  ⚡ RECOMMENDED for this claim (outlet safety concern)\n"
+            "\n"
+            "GENERAL CONTRACTOR:\n"
+            "  BuildRight NW — (512) 555-0211\n"
+            "  Rating: 4.8★ | Used in customer's 2022 claim\n"
+            "\n"
+            "RECENT ESTIMATE (Teams msg, David Park → Rachel Torres, today):\n"
+            "  'Got preliminary from AquaRestore — $12,400 for full water damage\n"
+            "   restoration including carpet removal, drywall replacement (lower 4ft),\n"
+            "   and antimicrobial treatment. Electrician quote pending.'\n"
         )
 
-    # Coverage/policy details from "CRM"
-    if any(kw in q for kw in ["coverage", "limit", "policy detail", "endorsement", "rider"]):
+    # ── Coverage/policy details from "CRM" ──
+    if any(kw in q for kw in ["coverage", "limit", "policy detail", "endorsement", "rider", "covered"]):
         return (
-            "POLICY ENDORSEMENTS & NOTES:\n"
-            f"- Water backup coverage: YES (Endorsement HO-46, $25K sublimit)\n"
-            f"- Mold coverage: YES (up to $10,000 per occurrence)\n"
-            f"- Sump pump failure: Covered under HO-46\n"
-            f"- Personal property: Replacement cost basis\n"
-            f"- Account note from agent (email, Jan 2024): 'Customer upgraded to include "
-            f"water backup after neighbor had flooding issue.'\n"
+            "📋 POLICY ENDORSEMENTS & COVERAGE VERIFICATION\n"
+            "Policy: ZAV-HO3-2024-08847 | Verified: May 2, 2024\n"
+            "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n"
+            "APPLICABLE ENDORSEMENTS:\n"
+            "  ✅ HO-46 Water Backup & Sump Overflow — $25,000 sublimit\n"
+            "  ✅ Mold Coverage — $10,000 per occurrence\n"
+            "  ✅ Personal Property — Replacement Cost basis\n"
+            "  ✅ Additional Living Expense — up to $145,500 if displaced\n"
+            "\n"
+            "COVERAGE DETERMINATION (automated):\n"
+            "  Primary cause: Sump pump failure + window well overflow\n"
+            "  → COVERED under HO-46\n"
+            "  → Deductible: $2,500 applies\n"
+            "  → Sublimit: $25,000 (estimated damage within limit)\n"
+            "\n"
+            "AGENT NOTES (email from Marcus Reeves, Jan 2024):\n"
+            "  'Customer upgraded to include water backup endorsement after\n"
+            "   neighbor on Elm Creek had basement flooding. Good call — this\n"
+            "   area has seen 3 sump-related claims in the past year.'\n"
         )
 
-    # Communication history
-    if any(kw in q for kw in ["email", "message", "contact", "called", "communic"]):
+    # ── Communication history / emails / messages ──
+    if any(kw in q for kw in ["email", "message", "contact", "called", "communic", "teams"]):
         return (
-            "RECENT COMMUNICATIONS:\n"
-            f"- 2 days ago (email): Customer reported water in basement, asked about filing\n"
-            f"- 1 day ago (Teams msg from agent): 'Scheduled adjuster visit for May 5'\n"
-            f"- Today: Customer uploaded photos via portal\n"
-            f"- Preferred contact: Email (sarah.mitchell@email.com), Phone (503-555-0177)\n"
+            "💬 RECENT COMMUNICATIONS — Last 7 Days\n"
+            "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n"
+            "May 2, 9:14 AM — PHONE (inbound, 8m 42s)\n"
+            "  Customer → Agent Priya Sharma: FNOL call, reported basement flooding\n"
+            "\n"
+            "May 2, 9:30 AM — EMAIL (outbound)\n"
+            "  Auto-generated: Claim confirmation + photo upload link sent to customer\n"
+            "\n"
+            "May 2, 11:45 AM — EMAIL (inbound)\n"
+            "  Customer: 'Here are the photos. The water is still rising slowly.\n"
+            "  Should I call a plumber or wait for the adjuster?'\n"
+            "\n"
+            "May 2, 12:02 PM — EMAIL (outbound)\n"
+            "  Agent Priya: 'You may take emergency mitigation steps — save all receipts.\n"
+            "  Adjuster will be there tomorrow morning.'\n"
+            "\n"
+            "May 3, 8:15 AM — TEAMS (internal)\n"
+            "  David Park → Rachel Torres: 'Heading to Mitchell property now.\n"
+            "  Photos look concerning — possible electrical hazard near water.'\n"
+            "\n"
+            "May 3, 11:00 AM — TEAMS (internal)\n"
+            "  David Park → Rachel Torres: 'On-site complete. Recommending\n"
+            "  emergency mitigation approval. Mold window closing fast.'\n"
+            "\n"
+            "PREFERRED CONTACT: Email (sarah.mitchell@email.com) | Phone: (512) 555-0177\n"
         )
 
-    # Default: basic customer summary from CRM
+    # ── Supervisor / approval queue context ──
+    if any(kw in q for kw in ["approv", "supervisor", "escalat", "queue", "pending review"]):
+        return (
+            "📊 APPROVAL QUEUE — Rachel Torres (Supervisor)\n"
+            "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n"
+            "CURRENT QUEUE (5 items):\n"
+            "  1. CLM-2024-09283 — Mitchell, water damage [$12-15K] ⚠️ URGENT\n"
+            "  2. CLM-2024-09280 — Johnson, roof hail [$6,200]\n"
+            "  3. CLM-2024-09277 — Chen, vehicle impact [$22,000]\n"
+            "  4. CLM-2024-09275 — Davis, theft [$3,800]\n"
+            "  5. CLM-2024-09271 — Patel, fire damage [$45,000]\n"
+            "\n"
+            "Mitchell claim context:\n"
+            "  - Adjuster recommends emergency mitigation (mold risk)\n"
+            "  - Safety escalation: electrical hazard near standing water\n"
+            "  - Pre-approved threshold: Claims under $10K auto-approve\n"
+            "  - This claim est. $12-15K → requires supervisor sign-off\n"
+            "  - Customer history: Excellent (2 prior claims, no issues)\n"
+            "\n"
+            "TEAMS MSG (David Park, 30 min ago):\n"
+            "  'Rachel — can you prioritize the Mitchell approval? Standing water\n"
+            "   + electrical situation. Need to get AquaRestore out there today.'\n"
+        )
+
+    # ── Weather / event context ──
+    if any(kw in q for kw in ["weather", "storm", "event", "catastrophe", "cat event", "region"]):
+        return (
+            "🌧️ REGIONAL EVENT CONTEXT\n"
+            "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n"
+            "EVENT: Severe Thunderstorm — Austin Metro, May 1-2, 2024\n"
+            "NWS Alert: Flash Flood Warning (expired May 2, 6:00 AM)\n"
+            "Rainfall: 3.8 inches in 4 hours (2-3 AM) — Elm Creek area hardest hit\n"
+            "\n"
+            "ZAVA CLAIMS IMPACT:\n"
+            "  - 14 new claims filed in Austin region (May 2-3)\n"
+            "  - 9 water damage, 3 wind damage, 2 vehicle (flooded roads)\n"
+            "  - CAT event threshold: Not yet declared (needs 25+ claims)\n"
+            "  - Elm Creek Dr area: 3 claims on same street\n"
+            "\n"
+            "ADJUSTER CAPACITY:\n"
+            "  - Austin region: 4 field adjusters, all deployed\n"
+            "  - Avg response time this week: 18 hours (normal: 6 hours)\n"
+            "  - Overflow support requested from San Antonio team\n"
+        )
+
+    # ── Default: rich customer summary ──
     return (
-        "CUSTOMER PROFILE (CRM):\n"
-        f"- Customer since: 2019 | Tenure: 5+ years\n"
-        f"- Risk score: Low | Payment: Current (auto-pay)\n"
-        f"- Prior claims: 2 (both resolved, no disputes)\n"
-        f"- Agent: Marcus Webb (Portland branch)\n"
-        f"- Notes: Valued long-term customer, responsive to communications\n"
+        "👤 CUSTOMER 360 — Sarah Mitchell\n"
+        "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n"
+        "RELATIONSHIP:\n"
+        "  Customer since: 2019 | Tenure: 5+ years | Segment: Premium\n"
+        "  Lifetime premiums: $16,200 | Claims paid: $12,300 | Ratio: 1.32x\n"
+        "  NPS Score: 9/10 (last survey, Oct 2023)\n"
+        "\n"
+        "CURRENT CLAIM: CLM-2024-09283 (Water Damage — OPEN)\n"
+        "  Filed: May 2 via phone | Adjuster: David Park (on-site complete)\n"
+        "  Est. damage: $12,000-$15,000 | Safety flag: electrical hazard\n"
+        "  Status: Assessment pending → supervisor approval\n"
+        "\n"
+        "RISK & BEHAVIOR:\n"
+        "  Risk score: Low | Fraud probability: <2%\n"
+        "  Payment: Current, auto-pay since 2020, never missed\n"
+        "  Engagement: Opens 80% of emails, uses portal regularly\n"
+        "\n"
+        "AGENT: Marcus Reeves (austin-west@zava.com)\n"
+        "  Last touchpoint: Jan 2024 policy review — added water backup endorsement\n"
+        "  Relationship note: 'Great customer, always responsive. Referred 2 neighbors.'\n"
     )
 
 
