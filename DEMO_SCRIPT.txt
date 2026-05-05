@@ -37,8 +37,27 @@ THE DEMO  (60 seconds)
 
 [0:10–0:30]  THE LIVE DEMO  ──────────────────────────────────────────────
 
-  CLICK: Claims AI tab → scroll to Sample Damage Photos
-  CLICK: "🌊 Flood Damage" photo (auto-assesses with one click)
+  CLICK: Claims AI tab
+
+  STEP 1 – UPLOAD THE 5 FLOODED KITCHEN PHOTOS:
+    Open the folder: sample_data\claim_photos\
+    Drag all 5 images into the upload zone (or click to browse):
+      • IMG_0148 - Copy.JPG   (basement water damage overview)
+      • IMG_0150.JPG           (water line on walls)
+      • IMG_0166.JPG           (flooring damage)
+      • IMG_0169.png           (damage detail – drywall cutout)
+      • IMG_9165.png           (additional damage area)
+
+  STEP 2 – POPULATE THE NOTES FIELD:
+    In the "Notes" text area, type or paste:
+
+      "Home owner is reporting water damage. Water likely either
+       coming from the ceiling or through a leaky pipe in the wall.
+       Drywall cutout behind dishwasher is showing water damage of
+       the wooden framing and subfloor."
+
+  STEP 3 – SUBMIT:
+    CLICK: "Assess with On-Device AI" button
 
   WHILE LOADING SAY: "A field adjuster photographs flood damage. The AI
   assesses severity, estimates repair cost, and recommends next steps —

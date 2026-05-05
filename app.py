@@ -261,6 +261,57 @@ _init_npu()
 print(f"[STARTUP] NPU (Phi Silica): {'Available' if npu_available else 'Not available'}")
 init_foundry()
 
+
+# ---------------------------------------------------------------------------
+# Model pre-warming — keeps all engines hot for instant response
+# ---------------------------------------------------------------------------
+_warmup_done = False
+
+
+def _full_warmup():
+    """Comprehensive warm-up: primes both NPU and CPU with claims-relevant work.
+    Called on first page load so everything is ready when user starts interacting."""
+    global _warmup_done
+    if _warmup_done:
+        return
+    _warmup_done = True
+    print("[WARMUP] Starting full warm-up (NPU + CPU)...")
+    t0 = time.perf_counter()
+
+    # Warm CPU (Foundry Local) — send a short claims-like prompt to prime KV cache
+    if foundry_ok:
+        try:
+            client.chat.completions.create(
+                model=model_id,
+                messages=[
+                    {"role": "system", "content": "You are an insurance claims assessor."},
+                    {"role": "user", "content": "Assess minor water damage to drywall."},
+                ],
+                max_tokens=20,
+            )
+            print(f"[WARMUP] CPU model primed ({round((time.perf_counter()-t0)*1000)}ms)")
+        except Exception as e:
+            print(f"[WARMUP] CPU warm failed: {e}")
+
+    # Warm NPU (Phi Silica) — quick ping to ensure model is in NPU memory
+    if npu_available:
+        t1 = time.perf_counter()
+        try:
+            subprocess.run(
+                [PHI_NPU_EXE, "chat", "ok"],
+                capture_output=True, text=True, timeout=10
+            )
+            print(f"[WARMUP] NPU chat primed ({round((time.perf_counter()-t1)*1000)}ms)")
+        except Exception as e:
+            print(f"[WARMUP] NPU already warm (init primed it)")
+
+    total_ms = round((time.perf_counter() - t0) * 1000)
+    print(f"[WARMUP] All engines ready in {total_ms}ms")
+
+
+# Warm-up fires on first page load (not blocking startup)
+# _full_warmup() is triggered by GET / below
+
 # ---------------------------------------------------------------------------
 # Flask app
 # ---------------------------------------------------------------------------
@@ -272,9 +323,14 @@ ALLOWED_EXTENSIONS = {"png", "jpg", "jpeg", "gif", "webp", "bmp"}
 app = Flask(__name__, static_folder="static", template_folder="templates")
 app.config["MAX_CONTENT_LENGTH"] = 16 * 1024 * 1024  # 16 MB
 
-# Background thread pool for parallel image analysis
-_executor = ThreadPoolExecutor(max_workers=2)
-_image_cache: dict = {}  # filename → description
+# Separate executor lanes for true hardware parallelism:
+#   NPU lane (1 worker) — phi-npu.exe is single-threaded, queue photos sequentially
+#   CPU lane (3 workers) — Foundry Local can handle concurrent requests for enhancement
+_npu_executor = ThreadPoolExecutor(max_workers=1)
+_cpu_executor = ThreadPoolExecutor(max_workers=3)
+_executor = _npu_executor  # backward compat for any direct references
+_image_cache: dict = {}  # filename → {raw, enhanced, best}
+_image_cache_raw: dict = {}  # filename → raw NPU description (always available first)
 
 # ---------------------------------------------------------------------------
 # Helpers
@@ -535,6 +591,9 @@ def _run_inference(system_prompt: str, user_prompt: str, max_tokens: int = 1024)
 # ---------------------------------------------------------------------------
 @app.route("/")
 def index():
+    # Trigger full warm-up on first page load (background, non-blocking)
+    if not _warmup_done:
+        _cpu_executor.submit(_full_warmup)
     return render_template("index.html")
 
 
@@ -760,6 +819,17 @@ def api_assess_claim_stream():
     if not description and not photo_files:
         return jsonify({"error": "No damage description or photos provided"}), 400
 
+    # Wait up to 45s for photo analysis to complete (poll every 1s)
+    if photo_files:
+        import time as _t
+        deadline = _t.time() + 45
+        while _t.time() < deadline:
+            ready = sum(1 for f in photo_files if f in _image_cache)
+            if ready >= len(photo_files):
+                break
+            _t.sleep(1)
+        print(f"[ASSESS] {ready}/{len(photo_files)} photos ready at assessment start")
+
     photo_descriptions = []
     for fname in photo_files:
         if fname in _image_cache:
@@ -785,15 +855,22 @@ def api_assess_claim_stream():
         engine = "none"
         text = ""
 
-        # Try NPU first (phi-npu.exe — fast ~5-7s)
-        if npu_available:
-            print(f"[PIPELINE] Assessment → NPU (Phi Silica)")
+        # Routing logic: NPU for short text-only claims, CPU for photo-based claims
+        # Photo-based claims produce large prompts that exceed NPU CLI limits/timeout
+        use_npu_for_assessment = npu_available and len(photo_files) == 0
+
+        # Try NPU first for text-only claims (phi-npu.exe — fast ~5-7s)
+        if use_npu_for_assessment:
+            print(f"[PIPELINE] Assessment → NPU (Phi Silica) [no photos, short prompt]")
             engine = "npu"
             text = _npu_chat(system, user_prompt, max_tokens=500)
 
-        # CPU fallback via Foundry Local streaming
+        # CPU (Foundry Local) for photo-based claims or NPU fallback
         if not text and foundry_ok:
-            print(f"[PIPELINE] Assessment → CPU (Foundry Local) fallback")
+            if photo_files:
+                print(f"[PIPELINE] Assessment → CPU (Foundry Local) [photo-based, {len(photo_files)} photos]")
+            else:
+                print(f"[PIPELINE] Assessment → CPU (Foundry Local) fallback")
             engine = "cpu"
             for chunk in _foundry_chat_stream(system, user_prompt, max_tokens=500):
                 yield f"data: {json.dumps({'chunk': chunk})}\n\n"
@@ -995,19 +1072,24 @@ def upload_image():
     save_path = str(UPLOAD_DIR / fname)
     f.save(save_path)
 
+    # Pre-warm engines on first upload if not already done
+    if not _warmup_done:
+        _cpu_executor.submit(_full_warmup)
+
     # Start background NPU image analysis (vision-only, no LLM rewrite)
-    # Assessment LLM runs on CPU (Foundry Local) = true hardware parallelism
+    # Pipeline: NPU describes → CPU enhances in parallel → best available used for assessment
     damage_type_hint = request.form.get("damage_type", "property")
     if os.path.isfile(PHI_NPU_EXE):
         def _bg_analyze(path, name, dtype):
-            """NPU-only photo analysis: phi-npu.exe describe (~8s).
-            Fast single-stage vision — no CPU rewrite needed.
-            Domain inference rules add mold/damage notes post-analysis."""
+            """NPU photo analysis with parallel CPU enhancement.
+            NPU does vision (~8-15s), then CPU expands the description
+            while NPU moves to the next photo = true hardware parallelism."""
             t0 = time.perf_counter()
             raw_desc = _npu_describe_image(path)
             npu_ms = round((time.perf_counter() - t0) * 1000)
             if not raw_desc:
                 _image_cache[name] = "(Photo could not be analyzed)"
+                _image_cache_raw[name] = ""
                 return
 
             # For water damage: apply domain knowledge inference rules
@@ -1036,14 +1118,26 @@ def upload_image():
                         f"\nDAMAGE INDICATORS: {'; '.join(indicators)}. "
                         "MOLD IS PRESENT OR HIGHLY PROBABLE per industry standards."
                     )
-                    _image_cache[name] = f"{raw_desc}{mold_note}"
+                    annotated = f"{raw_desc}{mold_note}"
                 else:
-                    _image_cache[name] = raw_desc
+                    annotated = raw_desc
             else:
-                _image_cache[name] = raw_desc
+                annotated = raw_desc
 
-            print(f"[NPU] {name} analyzed in {npu_ms}ms: {_image_cache[name][:100]}...")
-        _executor.submit(_bg_analyze, save_path, fname, damage_type_hint)
+            # Store raw result immediately (available for assessment right away)
+            _image_cache_raw[name] = annotated
+            _image_cache[name] = annotated
+            print(f"[NPU] {name} analyzed in {npu_ms}ms: {annotated[:100]}...")
+
+            # Submit CPU enhancement in parallel (NPU moves to next photo)
+            def _bg_enhance(fname, desc, damage):
+                enhanced = _enhance_photo_description(desc, damage)
+                if enhanced and enhanced != desc:
+                    _image_cache[fname] = enhanced
+                    print(f"[CPU] {fname} enhanced ({len(enhanced)} chars)")
+            _cpu_executor.submit(_bg_enhance, name, annotated, dtype)
+
+        _npu_executor.submit(_bg_analyze, save_path, fname, damage_type_hint)
 
     return jsonify({"filename": fname, "url": f"/uploads/{fname}"})
 

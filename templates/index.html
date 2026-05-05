@@ -28,6 +28,35 @@
             --shadow: 0 2px 12px rgba(0,51,160,.08);
             --shadow-lg: 0 8px 32px rgba(0,51,160,.12);
         }
+        [data-theme="dark"] {
+            --pg-blue-light: #1a2744;
+            --pg-white: #1e2330;
+            --pg-gray-50: #14171f;
+            --pg-gray-100: #2a2f3d;
+            --pg-gray-200: #3d4455;
+            --pg-gray-600: #a0aab8;
+            --pg-gray-800: #e4e8f0;
+            --pg-shadow: 0 2px 12px rgba(0,0,0,.3);
+            --shadow: 0 2px 12px rgba(0,0,0,.3);
+            --shadow-lg: 0 8px 32px rgba(0,0,0,.4);
+        }
+        [data-theme="dark"] textarea,
+        [data-theme="dark"] input[type="text"],
+        [data-theme="dark"] select {
+            background: var(--pg-gray-100);
+            color: var(--pg-gray-800);
+        }
+        [data-theme="dark"] .result-box {
+            background: #161920;
+            color: #d0d6e0;
+        }
+        [data-theme="dark"] .header {
+            background: #0a1628;
+        }
+        [data-theme="dark"] .tab-bar {
+            background: #1a1f2c;
+            border-bottom-color: #2a2f3d;
+        }
         html { font-size: 15px; }
         body {
             font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
@@ -114,6 +143,34 @@
         .status-dot.offline { background: var(--pg-orange); box-shadow: 0 0 6px var(--pg-orange); }
         .status-label { font-size: .78rem; opacity: .9; }
         @keyframes pulse-dot { 0%,100%{ opacity:1 } 50%{ opacity:.5 } }
+
+        /* ── Theme Toggle ────────────────────────────────────── */
+        .theme-toggle {
+            display: flex;
+            align-items: center;
+            background: rgba(255,255,255,.1);
+            border-radius: 6px;
+            padding: 2px;
+            gap: 0;
+        }
+        .theme-toggle button {
+            background: none;
+            border: none;
+            color: rgba(255,255,255,.6);
+            font-size: .75rem;
+            padding: .3rem .5rem;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: all .2s;
+            line-height: 1;
+        }
+        .theme-toggle button.active {
+            background: rgba(255,255,255,.2);
+            color: #fff;
+        }
+        .theme-toggle button:hover:not(.active) {
+            color: rgba(255,255,255,.9);
+        }
 
         /* ── Tab Bar ──────────────────────────────────────── */
         .tab-bar {
@@ -1207,6 +1264,10 @@ async function submitClaim() {
     loading.classList.remove('hidden');
     resultBox.textContent = '';
     document.getElementById('claimMeta').classList.add('hidden');
+
+    // Stop photo analysis polling and hide its banner — assessment will use whatever is ready
+    if (_pollInterval) { clearInterval(_pollInterval); _pollInterval = null; }
+    document.getElementById('photoAnalyzing').classList.add('hidden');
 
     try {
         const res = await fetch('/api/assess-claim-stream', {
