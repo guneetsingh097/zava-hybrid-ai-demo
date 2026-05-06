@@ -10,17 +10,21 @@ import sys
 block_cipher = None
 BASE = os.path.dirname(os.path.abspath(SPEC))
 
+# Build datas list, skipping files that don't exist (e.g. in CI)
+_datas = [
+    ('app.py', '.'),
+    ('templates', 'templates'),
+    ('static', 'static'),
+    ('sample_data', 'sample_data'),
+    ('reports', 'reports'),
+]
+datas = [(os.path.join(BASE, src), dst) for src, dst in _datas if os.path.exists(os.path.join(BASE, src))]
+
 a = Analysis(
     ['launcher.py'],
     pathex=[BASE],
     binaries=[],
-    datas=[
-        ('app.py', '.'),
-        ('templates', 'templates'),
-        ('static', 'static'),
-        ('sample_data', 'sample_data'),
-        ('reports', 'reports'),
-    ],
+    datas=datas,
     hiddenimports=[
         'flask',
         'openai',
@@ -61,7 +65,7 @@ exe = EXE(
     console=False,  # No console window — use windowed mode
     disable_windowed_traceback=False,
     argv_emulation=False,
-    target_arch='arm64',
+    target_arch=None,  # Use host arch (arm64 locally, x64 in CI)
     icon='packaging/Assets/app.ico',
 )
 

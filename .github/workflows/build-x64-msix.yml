@@ -1,0 +1,70 @@
+name: Build x64 MSIX
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - '*.py'
+      - 'templates/**'
+      - 'static/**'
+      - 'packaging/**'
+      - 'ZavaInsurance.spec'
+
+jobs:
+  build-x64:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python 3.12
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Install dependencies
+        run: |
+          pip install pyinstaller flask requests httpx openai tiktoken python-dotenv pillow
+          pip install foundry-local || echo "foundry-local not available, skipping"
+          pip install pywebview || echo "pywebview not available, skipping"
+
+      - name: Build with PyInstaller
+        run: python -m PyInstaller ZavaInsurance.spec --noconfirm
+
+      - name: Generate Store assets
+        run: python generate_assets.py
+
+      - name: Create MSIX layout
+        run: |
+          $layout = "dist\msix_layout_x64"
+          if (Test-Path $layout) { Remove-Item -Recurse -Force $layout }
+          New-Item -ItemType Directory $layout | Out-Null
+          Copy-Item -Recurse -Force "dist\ZavaInsurance\*" $layout
+          Copy-Item -Force "packaging\AppxManifest.xml" $layout
+          New-Item -ItemType Directory "$layout\Assets" -Force | Out-Null
+          Copy-Item -Force "packaging\Assets\*" "$layout\Assets\"
+
+          # Patch manifest for x64
+          $manifest = Get-Content "$layout\AppxManifest.xml" -Raw
+          $manifest = $manifest -replace 'ProcessorArchitecture="arm64"', 'ProcessorArchitecture="x64"'
+          Set-Content "$layout\AppxManifest.xml" $manifest
+        shell: pwsh
+
+      - name: Install Windows SDK
+        run: |
+          choco install windows-sdk-10-version-2004-all -y --no-progress 2>$null
+          $makeappx = Get-ChildItem "C:\Program Files (x86)\Windows Kits\10\bin" -Recurse -Filter "makeappx.exe" |
+            Where-Object { $_.FullName -like "*x64*" } | Select-Object -First 1 -ExpandProperty FullName
+          echo "MAKEAPPX=$makeappx" >> $env:GITHUB_ENV
+        shell: pwsh
+
+      - name: Package MSIX
+        run: |
+          & $env:MAKEAPPX pack /d "dist\msix_layout_x64" /p "dist\ZavaInsurance-x64.msix" /nv
+        shell: pwsh
+
+      - name: Upload MSIX artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: ZavaInsurance-x64-msix
+          path: dist/ZavaInsurance-x64.msix
