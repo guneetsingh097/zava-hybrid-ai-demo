@@ -316,8 +316,16 @@ def _full_warmup():
 # Flask app
 # ---------------------------------------------------------------------------
 BASE_DIR = Path(__file__).resolve().parent
-UPLOAD_DIR = BASE_DIR / "uploads"
-UPLOAD_DIR.mkdir(exist_ok=True)
+
+# When running as a packaged MSIX app, WindowsApps folder is read-only.
+# Redirect writable dirs to user's AppData.
+import sys as _sys
+if getattr(_sys, 'frozen', False) or 'WindowsApps' in str(BASE_DIR):
+    _appdata = Path(os.environ.get('LOCALAPPDATA', os.path.expanduser('~'))) / 'ZavaInsurance'
+    UPLOAD_DIR = _appdata / "uploads"
+else:
+    UPLOAD_DIR = BASE_DIR / "uploads"
+UPLOAD_DIR.mkdir(parents=True, exist_ok=True)
 ALLOWED_EXTENSIONS = {"png", "jpg", "jpeg", "gif", "webp", "bmp"}
 
 app = Flask(__name__, static_folder="static", template_folder="templates")
@@ -908,8 +916,11 @@ def api_assess_claim_stream():
 # ---------------------------------------------------------------------------
 APPROVAL_WEBHOOK_URL = os.environ.get("APPROVAL_WEBHOOK_URL", "")
 APPROVAL_EMAIL = os.environ.get("APPROVAL_EMAIL", "gusing@microsoft.com")
-REPORTS_DIR = BASE_DIR / "reports"
-REPORTS_DIR.mkdir(exist_ok=True)
+if getattr(_sys, 'frozen', False) or 'WindowsApps' in str(BASE_DIR):
+    REPORTS_DIR = Path(os.environ.get('LOCALAPPDATA', os.path.expanduser('~'))) / 'ZavaInsurance' / "reports"
+else:
+    REPORTS_DIR = BASE_DIR / "reports"
+REPORTS_DIR.mkdir(parents=True, exist_ok=True)
 
 
 @app.route("/api/submit-approval", methods=["POST"])
